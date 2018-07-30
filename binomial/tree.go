@@ -5,7 +5,7 @@ type Item interface {
 	Less(Item) bool
 }
 
-// Tree is a binomial tree. 
+// Tree is a binomial tree.
 type Tree struct {
 	// Item is the binomial tree Tree data.
 	Item Item
