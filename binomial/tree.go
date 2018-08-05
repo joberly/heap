@@ -14,9 +14,9 @@ type Tree struct {
 	k uint
 
 	// Tree structure pointers.
-	parent  *Tree
-	sibling *Tree
-	child   *Tree
+	parent  *Tree  // direct parent
+	sibling *Tree  // next sibling
+	child   *Tree  // first child
 }
 
 // NewTree creates a new binomial tree with the specified Item.

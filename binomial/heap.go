@@ -1,3 +1,4 @@
+// Package binomial contains binomial tree and heap data structures.
 package binomial
 
 import "container/list"
