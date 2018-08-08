@@ -9,24 +9,24 @@ type Heap struct {
 }
 
 // Add places a new Item on the heap.
-func (h *Heap) Add(i Item) {
+func (h *Heap) Add(i interface{}, less Less) {
 	// Add new item as rank 0 tree.
 	t := NewTree(i)
-	h.combine(t)
+	h.combine(t, less)
 }
 
 // Combine looks through the existing trees on the heap, combining the new
 // tree into another tree of the same rank. It repeats this process until
 // the new combined tree has no other trees of the same rank in the list.
 // The new tree is added to the front of the list.
-func (h *Heap) combine(t *Tree) {
+func (h *Heap) combine(t *Tree, less Less) {
 	tnew := t
 	e := h.list.Front()
 	for e != nil {
 		tnext := e.Value.(*Tree)
 		if tnew.Rank() == tnext.Rank() {
 			h.list.Remove(e)
-			tnew = Merge(tnew, tnext)
+			tnew = Merge(tnew, tnext, less)
 			e = h.list.Front()
 		} else {
 			e = e.Next()
@@ -36,8 +36,8 @@ func (h *Heap) combine(t *Tree) {
 }
 
 // FindMin finds the minimum item on the heap.
-func (h *Heap) FindMin() Item {
-	tmin, _ := h.findMin()
+func (h *Heap) FindMin(less Less) interface{} {
+	tmin, _ := h.findMin(less)
 	if tmin == nil {
 		return nil
 	}
@@ -45,13 +45,13 @@ func (h *Heap) FindMin() Item {
 }
 
 // FindMin finds the tree whose root has the minimum item on the heap.
-func (h *Heap) findMin() (*Tree, *list.Element) {
+func (h *Heap) findMin(less Less) (*Tree, *list.Element) {
 	e := h.list.Front()
 	var emin *list.Element
 	var tmin *Tree
 	for e != nil {
 		t := e.Value.(*Tree)
-		if tmin == nil || t.Item.Less(tmin.Item) {
+		if tmin == nil || less(t.Item, tmin.Item) {
 			emin = e
 			tmin = t
 		}
@@ -61,9 +61,9 @@ func (h *Heap) findMin() (*Tree, *list.Element) {
 }
 
 // RemoveMin removes the minimum item from the heap.
-func (h *Heap) RemoveMin() Item {
+func (h *Heap) RemoveMin(less Less) interface{} {
 	// Find the minimum item and its tree's list element.
-	tmin, emin := h.findMin()
+	tmin, emin := h.findMin(less)
 	if tmin == nil {
 		return nil
 	}
@@ -87,7 +87,7 @@ func (h *Heap) RemoveMin() Item {
 		t.sibling = nil
 
 		// Combine t into other trees on the heap's list.
-		h.combine(t)
+		h.combine(t, less)
 
 		// Go to the next sibling of the original minimum item tree.
 		t = tnext

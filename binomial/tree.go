@@ -1,14 +1,9 @@
 package binomial
 
-// Item is the interface for data on a binomial tree and heap.
-type Item interface {
-	Less(Item) bool
-}
-
 // Tree is a binomial tree.
 type Tree struct {
 	// Item is the binomial tree Tree data.
-	Item Item
+	Item interface{} 
 
 	// k is the rank of the tree.
 	k uint
@@ -19,11 +14,11 @@ type Tree struct {
 	child   *Tree  // first child
 }
 
+// Less is a function that returns true if a is less than b.
+type Less func(a, b interface{}) bool
+
 // NewTree creates a new binomial tree with the specified Item.
-func NewTree(item Item) *Tree {
-	if item == nil {
-		return nil
-	}
+func NewTree(item interface{}) *Tree {
 	return &Tree{Item: item}
 }
 
@@ -34,7 +29,7 @@ func (t *Tree) Rank() uint {
 
 // Merge combines two Trees of the same rank, returning the new binomial tree.
 // This consumes n1 and n2 into the new tree.
-func Merge(t1, t2 *Tree) *Tree {
+func Merge(t1, t2 *Tree, less Less) *Tree {
 
 	// It is up to the caller to understand that only Trees of the
 	// same rank can be merged.
@@ -45,7 +40,7 @@ func Merge(t1, t2 *Tree) *Tree {
 	// Determine which Tree is the parent and which will be the child.
 	tp := t1
 	tc := t2
-	if t2.Item.Less(t1.Item) {
+	if less(t2.Item, t1.Item) {
 		tp = t2
 		tc = t1
 	}
@@ -66,11 +61,11 @@ func Merge(t1, t2 *Tree) *Tree {
 
 // Bubble moves an item up the tree if it is less than its successive parents.
 // Returns the new Tree where the Item was placed.
-func Bubble(t *Tree) *Tree {
+func Bubble(t *Tree, less Less) *Tree {
 	item := t.Item
 	c := t
 	p := t.parent
-	for p != nil && item.Less(p.Item) {
+	for p != nil && less(item, p.Item) {
 		c.Item = p.Item
 		p.Item = item
 		c = p

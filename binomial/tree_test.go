@@ -5,18 +5,8 @@ import (
 	"testing"
 )
 
-// IntItem wraps int in a type which provides the Item interface.
-type IntItem int
-
-func (i IntItem) Less(j Item) bool {
-	return int(i) < int(j.(IntItem))
-}
-
-func TestNewNilItem(t *testing.T) {
-	tree := NewTree(nil)
-	if tree != nil {
-		t.Errorf("tree created with nil item: %+v", *tree)
-	}
+func intLess(a, b interface{}) bool {
+	return a.(int) < b.(int)
 }
 
 func TestMerge(t *testing.T) {
@@ -26,8 +16,8 @@ func TestMerge(t *testing.T) {
 	}
 
 	for _, vs := range values {
-		ta := NewTree(IntItem(vs[0]))
-		tb := NewTree(IntItem(vs[1]))
+		ta := NewTree(vs[0])
+		tb := NewTree(vs[1])
 
 		if ta.Rank() != 0 {
 			t.Errorf("Tree rank incorrect: %+v\n", *ta)
@@ -35,7 +25,7 @@ func TestMerge(t *testing.T) {
 
 		tname := fmt.Sprintf("testing %v", vs)
 		t.Run(tname, func(t *testing.T) {
-			checkMergedTree(t, Merge(ta, tb))
+			checkMergedTree(t, Merge(ta, tb, intLess))
 		})
 	}
 }
@@ -46,7 +36,7 @@ func checkMergedTree(t *testing.T, mt *Tree) {
 		t.Errorf("new Tree rank incorrect: %+v\n", mt)
 	}
 
-	if int(mt.Item.(IntItem)) != 1 {
+	if int(mt.Item.(int)) != 1 {
 		t.Errorf("root Tree item incorrect: %+v\n", *mt)
 	}
 
@@ -64,7 +54,7 @@ func checkMergedTree(t *testing.T, mt *Tree) {
 		t.Errorf("child's parent not root: %+v\n", *c)
 	}
 
-	if int(c.Item.(IntItem)) != 2 {
+	if int(c.Item.(int)) != 2 {
 		t.Errorf("child Tree item incorrect: %+v\n", *c)
 	}
 
@@ -78,23 +68,24 @@ func checkMergedTree(t *testing.T, mt *Tree) {
 }
 
 func TestMergeDiffRanks(t *testing.T) {
-	t1 := NewTree(IntItem(1))
-	t2 := NewTree(IntItem(2))
-	t3 := NewTree(IntItem(3))
+	t1 := NewTree(1)
+	t2 := NewTree(2)
+	t3 := NewTree(3)
 
-	t23 := Merge(t2, t3)
+	t23 := Merge(t2, t3, intLess)
 
-	mt := Merge(t1, t23)
+	mt := Merge(t1, t23, intLess)
 	if mt != nil {
 		t.Errorf("merge did not fail: %+v", *mt)
 	}
 }
 
 func TestBubble(t *testing.T) {
-	b := NewTree(IntItem(50))
+	b := NewTree(50)
 	tree := Merge(
-		Merge(b, NewTree(IntItem(20))),
-		Merge(NewTree(IntItem(30)), NewTree(IntItem(10))),
+		Merge(b, NewTree(20), intLess),
+		Merge(NewTree(30), NewTree(10), intLess),
+		intLess,
 	)
 
 	// Expect tree to be as follows:
@@ -112,14 +103,14 @@ func TestBubble(t *testing.T) {
 	//  |
 	// 20
 
-	b.Item = IntItem(1)
-	b = Bubble(b)
+	b.Item = 1
+	b = Bubble(b, intLess)
 
 	if b != tree && b.parent != nil {
 		t.Errorf("item not moved to root: %+v", *b)
 	}
 
-	if int(tree.Item.(IntItem)) != 1 {
+	if int(tree.Item.(int)) != 1 {
 		t.Errorf("root item value incorrect: %+v", *tree)
 	}
 }

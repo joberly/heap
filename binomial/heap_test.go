@@ -17,12 +17,12 @@ func TestHeapAddRemove(t *testing.T) {
 	for len(vsinsert) > 0 {
 		i := r.Int() % len(vsinsert)
 		v := vsinsert[i]
-		h.Add(IntItem(v))
+		h.Add(v, intLess)
 		vsinsert = append(vsinsert[:i],vsinsert[i+1:]...)
 	}
 
 	for _, v := range vs {
-		w := int(h.RemoveMin().(IntItem))
+		w := int(h.RemoveMin(intLess).(int))
 		if w != v {
 			t.Errorf("unexpected item from heap %v (expected %v)", w, v)
 		}
