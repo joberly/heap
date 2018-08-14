@@ -1,13 +1,13 @@
 package binomial
 
 import (
-	"time"
 	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestHeapAddRemove(t *testing.T) {
-	h := &Heap{}
+	h := NewHeap(intLess)
 	vs := []int{10, 20, 30, 30, 40, 40, 40, 50}
 
 	vsinsert := make([]int, len(vs))
@@ -17,12 +17,12 @@ func TestHeapAddRemove(t *testing.T) {
 	for len(vsinsert) > 0 {
 		i := r.Int() % len(vsinsert)
 		v := vsinsert[i]
-		h.Add(v, intLess)
-		vsinsert = append(vsinsert[:i],vsinsert[i+1:]...)
+		h.Add(v)
+		vsinsert = append(vsinsert[:i], vsinsert[i+1:]...)
 	}
 
 	for _, v := range vs {
-		w := int(h.RemoveMin(intLess).(int))
+		w := int(h.RemoveMin().(int))
 		if w != v {
 			t.Errorf("unexpected item from heap %v (expected %v)", w, v)
 		}
