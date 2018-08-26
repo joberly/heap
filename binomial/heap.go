@@ -17,10 +17,11 @@ func NewHeap(less Less) *Heap {
 }
 
 // Add places a new Item on the heap.
-func (h *Heap) Add(i interface{}) {
+func (h *Heap) Add(i interface{}) *Node {
 	// Add new item as rank 0 tree.
-	t := NewTree(i)
-	h.combine(t)
+	n := newNode(i)
+	h.combine(n.t)
+	return n
 }
 
 // Combine looks through the existing trees on the heap, combining the new
@@ -32,9 +33,9 @@ func (h *Heap) combine(t *Tree) {
 	e := h.list.Front()
 	for e != nil {
 		tnext := e.Value.(*Tree)
-		if tnew.Rank() == tnext.Rank() {
+		if tnew.rank() == tnext.rank() {
 			h.list.Remove(e)
-			tnew = Merge(tnew, tnext, h.less)
+			tnew = merge(tnew, tnext, h.less)
 			e = h.list.Front()
 		} else {
 			e = e.Next()
@@ -44,12 +45,12 @@ func (h *Heap) combine(t *Tree) {
 }
 
 // FindMin finds the minimum item on the heap.
-func (h *Heap) FindMin() interface{} {
+func (h *Heap) FindMin() *Node {
 	tmin, _ := h.findMin()
 	if tmin == nil {
 		return nil
 	}
-	return tmin.Item
+	return tmin.n
 }
 
 // FindMin finds the tree whose root has the minimum item on the heap.
@@ -59,7 +60,7 @@ func (h *Heap) findMin() (*Tree, *list.Element) {
 	var tmin *Tree
 	for e != nil {
 		t := e.Value.(*Tree)
-		if tmin == nil || h.less(t.Item, tmin.Item) {
+		if tmin == nil || h.less(t.n.Item, tmin.n.Item) {
 			emin = e
 			tmin = t
 		}
@@ -76,7 +77,7 @@ func (h *Heap) RemoveMin() interface{} {
 		return nil
 	}
 
-	imin := tmin.Item
+	imin := tmin.n.Item
 
 	// Remove the element from the list.
 	h.list.Remove(emin)
@@ -102,4 +103,10 @@ func (h *Heap) RemoveMin() interface{} {
 	}
 
 	return imin
+}
+
+// Update updates the item in a Heap when the value of the item changes.
+// The results are undefined if Node n is not on this Heap.
+func (h *Heap) Update(n *Node) {
+	n.bubble(h.less)
 }

@@ -8,13 +8,11 @@ Each box below is a Tree struct. Each Tree's _child_ pointer is its first child 
 
 The rank, k, of each node is the rank of the tree below that node if you consider that node a root.
 
-This entire diagram represents a rank 2 or degree 2 binomial tree.
+This entire diagram represents a rank 2 or degree 2 binomial tree. The Node pointers on each Tree are omitted for simplicity.
 
 ```
       +---------+
-+----->Item: 10 |
-|     +---------+
-|     |k: 2     |
++----->k: 2     |
 |     +---------+
 |     |parent   |
 |     |sibling  |
@@ -22,9 +20,7 @@ This entire diagram represents a rank 2 or degree 2 binomial tree.
 |  |  +---------+
 |  |
 |  |  +---------+        +---------+
-|  +-->Item: 20 | +------>Item: 12 <--+
-|     +---------+ |      +---------+  |
-|     |k: 0     | |      |k: 1     |  |
+|  +-->k: 0     | +------>k: 1     <--+
 |     +---------+ |      +---------+  |
 +-----+parent   | | +----+parent   |  |
 |     |sibling  +-+ |    |sibling  |  |
@@ -33,9 +29,7 @@ This entire diagram represents a rank 2 or degree 2 binomial tree.
 |                   | |               |
 +-------------------+ |               |
                       |  +---------+  |
-                      +-->Item: 18 |  |
-                         +---------+  |
-                         |k: 0     |  |
+                      +-->k: 0     |  |
                          +---------+  |
                          |parent   +--+
                          |sibling  |
