@@ -1,46 +1,53 @@
 package binomial
 
+// Node is a user data node on a binomial Tree.
+type Node struct {
+	Item interface{} // Consumer data
+
+	t *Tree // Current tree for this Node
+}
+
 // Tree is a binomial tree.
 type Tree struct {
-	// Item is the binomial tree Tree data.
-	Item interface{} 
-
-	// k is the rank of the tree.
-	k uint
+	n *Node // Container for user data
+	k uint  // Rank of the tree.
 
 	// Tree structure pointers.
-	parent  *Tree  // direct parent
-	sibling *Tree  // next sibling
-	child   *Tree  // first child
+	parent  *Tree // direct parent
+	sibling *Tree // next sibling
+	child   *Tree // first child
 }
 
 // Less is a function that returns true if a is less than b.
 type Less func(a, b interface{}) bool
 
-// NewTree creates a new binomial tree with the specified Item.
-func NewTree(item interface{}) *Tree {
-	return &Tree{Item: item}
+// NewNode creates a new binomial tree with the specified item.
+// It returns the Node created for the item.
+func newNode(item interface{}) *Node {
+	n := &Node{Item: item}
+	t := &Tree{n: n}
+	n.t = t
+	return n
 }
 
 // Rank returns the rank of the tree.
-func (t *Tree) Rank() uint {
+func (t *Tree) rank() uint {
 	return t.k
 }
 
 // Merge combines two Trees of the same rank, returning the new binomial tree.
 // This consumes n1 and n2 into the new tree.
-func Merge(t1, t2 *Tree, less Less) *Tree {
-
+func merge(t1, t2 *Tree, less Less) *Tree {
 	// It is up to the caller to understand that only Trees of the
 	// same rank can be merged.
-	if t1.k != t2.k {
+	if t1.rank() != t2.rank() {
 		return nil
 	}
 
 	// Determine which Tree is the parent and which will be the child.
 	tp := t1
 	tc := t2
-	if less(t2.Item, t1.Item) {
+	if less(t2.n.Item, t1.n.Item) {
 		tp = t2
 		tc = t1
 	}
@@ -60,17 +67,20 @@ func Merge(t1, t2 *Tree, less Less) *Tree {
 }
 
 // Bubble moves an item up the tree if it is less than its successive parents.
-// Returns the new Tree where the Item was placed.
-func Bubble(t *Tree, less Less) *Tree {
-	item := t.Item
-	c := t
-	p := t.parent
-	for p != nil && less(item, p.Item) {
-		c.Item = p.Item
-		p.Item = item
-		c = p
-		p = p.parent
+// The Node n now sits in the correct place in its Tree.
+func (n *Node) bubble(less Less) {
+	pt := n.t.parent
+	for pt != nil && less(n.Item, pt.n.Item) {
+		swap(n.t, pt)
+		pt = n.t.parent
 	}
+}
 
-	return c
+// Swap exchanges the nodes between two trees.
+func swap(t1 *Tree, t2 *Tree) {
+	ntemp := t1.n
+	t1.n = t2.n
+	t2.n = ntemp
+	t1.n.t = t1
+	t2.n.t = t2
 }

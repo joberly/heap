@@ -16,27 +16,27 @@ func TestMerge(t *testing.T) {
 	}
 
 	for _, vs := range values {
-		ta := NewTree(vs[0])
-		tb := NewTree(vs[1])
+		na := newNode(vs[0])
+		nb := newNode(vs[1])
 
-		if ta.Rank() != 0 {
-			t.Errorf("Tree rank incorrect: %+v\n", *ta)
+		if na.t.rank() != 0 {
+			t.Errorf("Tree rank incorrect: %+v\n", *na.t)
 		}
 
 		tname := fmt.Sprintf("testing %v", vs)
 		t.Run(tname, func(t *testing.T) {
-			checkMergedTree(t, Merge(ta, tb, intLess))
+			checkMergedTree(t, merge(na.t, nb.t, intLess))
 		})
 	}
 }
 
 // Assumes tree items are 1 and 2.
 func checkMergedTree(t *testing.T, mt *Tree) {
-	if mt.Rank() != 1 {
+	if mt.rank() != 1 {
 		t.Errorf("new Tree rank incorrect: %+v\n", mt)
 	}
 
-	if int(mt.Item.(int)) != 1 {
+	if int(mt.n.Item.(int)) != 1 {
 		t.Errorf("root Tree item incorrect: %+v\n", *mt)
 	}
 
@@ -54,7 +54,7 @@ func checkMergedTree(t *testing.T, mt *Tree) {
 		t.Errorf("child's parent not root: %+v\n", *c)
 	}
 
-	if int(c.Item.(int)) != 2 {
+	if int(c.n.Item.(int)) != 2 {
 		t.Errorf("child Tree item incorrect: %+v\n", *c)
 	}
 
@@ -68,23 +68,23 @@ func checkMergedTree(t *testing.T, mt *Tree) {
 }
 
 func TestMergeDiffRanks(t *testing.T) {
-	t1 := NewTree(1)
-	t2 := NewTree(2)
-	t3 := NewTree(3)
+	n1 := newNode(1)
+	n2 := newNode(2)
+	n3 := newNode(3)
 
-	t23 := Merge(t2, t3, intLess)
+	t23 := merge(n2.t, n3.t, intLess)
 
-	mt := Merge(t1, t23, intLess)
+	mt := merge(n1.t, t23, intLess)
 	if mt != nil {
 		t.Errorf("merge did not fail: %+v", *mt)
 	}
 }
 
 func TestBubble(t *testing.T) {
-	b := NewTree(50)
-	tree := Merge(
-		Merge(b, NewTree(20), intLess),
-		Merge(NewTree(30), NewTree(10), intLess),
+	b := newNode(50)
+	tree := merge(
+		merge(b.t, newNode(20).t, intLess),
+		merge(newNode(30).t, newNode(10).t, intLess),
 		intLess,
 	)
 
@@ -104,13 +104,13 @@ func TestBubble(t *testing.T) {
 	// 20
 
 	b.Item = 1
-	b = Bubble(b, intLess)
+	b.bubble(intLess)
 
-	if b != tree && b.parent != nil {
+	if b.t != tree && b.t.parent != nil {
 		t.Errorf("item not moved to root: %+v", *b)
 	}
 
-	if int(tree.Item.(int)) != 1 {
+	if int(tree.n.Item.(int)) != 1 {
 		t.Errorf("root item value incorrect: %+v", *tree)
 	}
 }
